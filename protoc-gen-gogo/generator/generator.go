@@ -3011,7 +3011,7 @@ func (g *Generator) generateOneofDecls(mc *msgCtx, topLevelFields []topLevelFiel
 	for _, of := range ofields {
 		for i, sf := range of.subFields {
 			_, wiretype := g.GoType(mc.message, sf.protoField)
-			tag := "protobuf:" + g.goTag(mc.message, sf.protoField, wiretype)
+			tag := g.getTags(sf.protoField, mc.message, wiretype)
 			fieldFullPath := fmt.Sprintf("%s,%d,%d", mc.message.path, messageFieldPath, i)
 			g.P("type ", Annotate(mc.message.file, fieldFullPath, sf.oneofTypeName), " struct{ ", Annotate(mc.message.file, fieldFullPath, sf.goName), " ", sf.goType, " `", tag, "` }")
 			if !gogoproto.IsStdType(sf.protoField) && !gogoproto.IsCustomType(sf.protoField) && !gogoproto.IsCastType(sf.protoField) {
@@ -3209,6 +3209,26 @@ func (g *Generator) generateCommonMethods(mc *msgCtx) {
 	g.P("var xxx_messageInfo_", mc.goName, " ", g.Pkg["proto"], ".InternalMessageInfo")
 }
 
+func (g *Generator) getTags(field *descriptor.FieldDescriptorProto, message *Descriptor, wiretype string) string {
+	jsonName := *field.Name
+	jsonTag := jsonName + ",omitempty"
+	repeatedNativeType := (!field.IsMessage() && !gogoproto.IsCustomType(field) && field.IsRepeated())
+	if !gogoproto.IsNullable(field) && !repeatedNativeType {
+		jsonTag = jsonName
+	}
+	gogoJsonTag := gogoproto.GetJsonTag(field)
+	if gogoJsonTag != nil {
+		jsonTag = *gogoJsonTag
+	}
+	gogoMoreTags := gogoproto.GetMoreTags(field)
+	moreTags := ""
+	if gogoMoreTags != nil {
+		log.Printf("%s\n", *gogoMoreTags)
+		moreTags = " " + *gogoMoreTags
+	}
+	return fmt.Sprintf("protobuf:%s json:%q%s", g.goTag(message, field, wiretype), jsonTag, moreTags)
+}
+
 // Generate the type and default constant definitions for this Descriptor.
 func (g *Generator) generateMessage(message *Descriptor) {
 	topLevelFields := []topLevelField{}
@@ -3263,22 +3283,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 		fieldName, fieldGetterName := ns[0], ns[1]
 
 		typename, wiretype := g.GoType(message, field)
-		jsonName := *field.Name
-		jsonTag := jsonName + ",omitempty"
-		repeatedNativeType := (!field.IsMessage() && !gogoproto.IsCustomType(field) && field.IsRepeated())
-		if !gogoproto.IsNullable(field) && !repeatedNativeType {
-			jsonTag = jsonName
-		}
-		gogoJsonTag := gogoproto.GetJsonTag(field)
-		if gogoJsonTag != nil {
-			jsonTag = *gogoJsonTag
-		}
-		gogoMoreTags := gogoproto.GetMoreTags(field)
-		moreTags := ""
-		if gogoMoreTags != nil {
-			moreTags = " " + *gogoMoreTags
-		}
-		tag := fmt.Sprintf("protobuf:%s json:%q%s", g.goTag(message, field, wiretype), jsonTag, moreTags)
+		tag := g.getTags(field, message, wiretype)
 		if *field.Type == descriptor.FieldDescriptorProto_TYPE_MESSAGE && gogoproto.IsEmbed(field) {
 			fieldName = ""
 		}
