@@ -3223,7 +3223,6 @@ func (g *Generator) getTags(field *descriptor.FieldDescriptorProto, message *Des
 	gogoMoreTags := gogoproto.GetMoreTags(field)
 	moreTags := ""
 	if gogoMoreTags != nil {
-		log.Printf("%s\n", *gogoMoreTags)
 		moreTags = " " + *gogoMoreTags
 	}
 	return fmt.Sprintf("protobuf:%s json:%q%s", g.goTag(message, field, wiretype), jsonTag, moreTags)
