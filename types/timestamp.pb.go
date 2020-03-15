@@ -124,6 +124,23 @@ type Timestamp struct {
 	XXX_sizecache        int32    `json:"-"`
 }
 
+func (m *Timestamp) DeepCopyInto(t *Timestamp) {
+	if m == nil || t == nil {
+		return
+	}
+	t.Seconds = m.Seconds
+	t.Nanos = m.Nanos
+}
+
+func (m *Timestamp) DeepCopy() *Timestamp {
+	if m == nil {
+		return nil
+	}
+	out := new(Timestamp)
+	m.DeepCopyInto(out)
+	return out
+}
+
 func (m *Timestamp) Reset()      { *m = Timestamp{} }
 func (*Timestamp) ProtoMessage() {}
 func (*Timestamp) Descriptor() ([]byte, []int) {
