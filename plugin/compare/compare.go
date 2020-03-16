@@ -29,6 +29,7 @@
 package compare
 
 import (
+	"fmt"
 	"github.com/gogo/protobuf/gogoproto"
 	"github.com/gogo/protobuf/proto"
 	descriptor "github.com/gogo/protobuf/protoc-gen-gogo/descriptor"
@@ -434,6 +435,7 @@ func (p *plugin) generateMessage(file *generator.FileDescriptor, message *genera
 			p.P(`thisType := -1`)
 			p.P(`switch this.`, fieldname, `.(type) {`)
 			for i, subfield := range message.Field {
+				fmt.Printf("%+v %+v\n", subfield.OneofIndex, field.OneofIndex)
 				if *subfield.OneofIndex == *field.OneofIndex {
 					ccTypeName := p.OneOfTypeName(message, subfield)
 					p.P(`case *`, ccTypeName, `:`)
