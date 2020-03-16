@@ -547,7 +547,7 @@ func (g *Generator) CommandLineParameters(parameter string) {
 	if pluginList == "none" {
 		pluginList = ""
 	}
-	gogoPluginNames := []string{"unmarshal", "unsafeunmarshaler", "union", "stringer", "size", "protosizer", "populate", "marshalto", "unsafemarshaler", "gostring", "face", "equal", "enumstringer", "embedcheck", "description", "defaultcheck", "oneofcheck", "compare"}
+	gogoPluginNames := []string{"unmarshal", "unsafeunmarshaler", "union", "stringer", "size", "protosizer", "populate", "marshalto", "unsafemarshaler", "gostring", "face", "equal", "enumstringer", "embedcheck", "description", "defaultcheck", "oneofcheck", "compare", "clone"}
 	pluginList = strings.Join(append(gogoPluginNames, pluginList), "+")
 	if pluginList != "" {
 		// Amend the set of plugins.
@@ -2822,6 +2822,7 @@ func (g *Generator) generateGet(mc *msgCtx, protoField *descriptor.FieldDescript
 		// as does a message or group field, or a repeated field.
 		g.P("if m != nil {")
 		g.In()
+
 		g.P("return m." + fname)
 		g.Out()
 		g.P("}")
@@ -3004,6 +3005,7 @@ func (g *Generator) generateOneofDecls(mc *msgCtx, topLevelFields []topLevelFiel
 		if gogoproto.IsProtoSizer(g.file.FileDescriptorProto, mc.message.DescriptorProto) {
 			g.P(`ProtoSize() int`)
 		}
+		g.P(fmt.Sprintf("Clone() %s", of.goType))
 		g.Out()
 		g.P("}")
 	}
@@ -3022,7 +3024,23 @@ func (g *Generator) generateOneofDecls(mc *msgCtx, topLevelFields []topLevelFiel
 	g.P()
 	for _, of := range ofields {
 		for _, sf := range of.subFields {
+			//fmt.Fprintf(os.Stderr, "sf: %+v\n", sf)
 			g.P("func (*", sf.oneofTypeName, ") ", of.goType, "() {}")
+
+			// subfield clone
+			g.cloneGenericHeader(sf.oneofTypeName, of.goType)
+
+			if *sf.protoField.Type == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+				g.P("cloned.", sf.goName, "=", "m.", sf.goName, ".Clone()")
+			}
+			//
+			//if sf.oneofTypeName == "ImageIntegration_Google" {
+			//	g.P()
+			//	fmt.Fprintf(os.Stderr, "SUBFIELD: %+v\n", sf)
+			//	fmt.Fprintf(os.Stderr, "Proto Field: %+v\n", sf.protoField)
+			//}
+			g.cloneGenericFooter()
+
 		}
 	}
 	g.P()
@@ -3061,7 +3079,6 @@ func (g *Generator) generateMessageStruct(mc *msgCtx, topLevelFields []topLevelF
 func (g *Generator) generateGetters(mc *msgCtx, topLevelFields []topLevelField) {
 	for _, pf := range topLevelFields {
 		pf.getter(g, mc)
-
 	}
 }
 
@@ -3129,6 +3146,10 @@ func (g *Generator) generateCommonMethods(mc *msgCtx) {
 	// table-driven approach. Instead, we should only add a single method
 	// that allows getting access to the *InternalMessageInfo struct and then
 	// calling Unmarshal, Marshal, Merge, Size, and Discard directly on that.
+
+	//if mc.goName == "ImageIntegration" {
+	//	fmt.Printf("%+v\n\n", mc.message.GetField())
+	//}
 
 	// Wrapper for table-driven marshaling and unmarshaling.
 	g.P("func (m *", mc.goName, ") XXX_Unmarshal(b []byte) error {")
@@ -3209,6 +3230,115 @@ func (g *Generator) generateCommonMethods(mc *msgCtx) {
 	g.P("var xxx_messageInfo_", mc.goName, " ", g.Pkg["proto"], ".InternalMessageInfo")
 }
 
+func (g *Generator) cloneGenericHeader(typeName, returnName string) {
+	g.P("func (m *", typeName, ") Clone() ", returnName ,"{")
+	g.In()
+	g.P("if m == nil {")
+	g.In()
+	g.P("return nil")
+	g.Out()
+	g.P("}")
+	g.P("cloned := new(", typeName, ")")
+	g.P("*cloned = *m")
+	g.P()
+}
+
+func (g *Generator) cloneGenericFooter() {
+	g.P("return cloned")
+	g.Out()
+	g.P("}")
+}
+
+func (g *Generator) ifNotNilHeader(name string) {
+	g.P("if m.", name, "!= nil {")
+}
+
+func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, mapFields map[string]*GoMapDescriptor) {
+	g.cloneGenericHeader(mc.goName, fmt.Sprintf("*%s", mc.goName))
+
+	for _, field := range topLevelFields {
+		switch typedField := field.(type) {
+		case *simpleField:
+			switch *typedField.protoField.Type {
+			case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
+				// If repeated do x, otherwise do y
+				if *typedField.protoField.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED {
+					if mapDesc, ok := mapFields[typedField.goName]; ok {
+						// Handle Map
+						g.ifNotNilHeader(typedField.goName)
+						g.In()
+						g.P("cloned.", typedField.goName, "= make(", mapDesc.GoType, ", ", "len(m.", typedField.goName, ")", ")")
+						g.P("for k, v := range m.", typedField.goName, " {")
+						g.In()
+						if *mapDesc.ValueField.Type == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+							g.P("cloned.", typedField.goName, "[k] = v.Clone()")
+						} else {
+							g.P("cloned.", typedField.goName, "[k] = v")
+						}
+						g.Out()
+						g.P("}")
+						g.Out()
+						g.P("}")
+					} else {
+						// Handle Slice
+						g.ifNotNilHeader(typedField.goName)
+						g.In()
+						g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
+						g.P("for idx, v := range m.", typedField.goName, " {")
+						g.In()
+						// All slices here are messages, otherwise, they are not of type message
+						g.P("cloned.", typedField.goName, "[idx] = v.Clone()")
+						g.Out()
+						g.P("}")
+						g.Out()
+						g.P("}")
+					}
+				} else {
+					g.P("if m.", typedField.goName, "!= nil {")
+					g.In()
+					switch typedField.goType {
+						case "*types.Timestamp":
+							g.P("cloned.", typedField.goName, "= new(types.Timestamp)")
+							g.P("cloned.", typedField.goName, ".Seconds = m.", typedField.goName, ".Seconds")
+							g.P("cloned.", typedField.goName, ".Nanos = m.", typedField.goName, ".Nanos")
+						case "*types.Any":
+							g.P("cloned.", typedField.goName, "= new(types.Any)")
+							g.P("cloned.", typedField.goName, ".TypeUrl = m.", typedField.goName, ".TypeUrl")
+							g.P("cloned.", typedField.goName, ".Value = make([]byte, len(m.", typedField.goName, ".Value))")
+							g.P("copy(cloned.", typedField.goName, ".Value", ", m.", typedField.goName, ".Value)")
+					default:
+						g.P("cloned.", typedField.goName, "=", "m.", typedField.goName, ".Clone()")
+					}
+					g.Out()
+					g.P("}")
+				}
+			default:
+				if *typedField.protoField.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED {
+					g.ifNotNilHeader(typedField.goName)
+					g.In()
+					g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
+					g.P("for idx, v := range m.", typedField.goName, " {")
+					g.In()
+					// All slices here are messages, otherwise, they are not of type message
+					g.P("cloned.", typedField.goName, "[idx] = v")
+					g.Out()
+					g.P("}")
+					g.Out()
+					g.P("}")
+				}
+			}
+		case *oneofField:
+			g.P("if m.", typedField.goName, "!=", "nil {")
+			g.In()
+			g.P("cloned.", typedField.goName, "= m.", typedField.goName, ".Clone()")
+			g.Out()
+			g.P("}")
+		}
+	}
+
+	g.cloneGenericFooter()
+}
+
 func (g *Generator) getTags(field *descriptor.FieldDescriptorProto, message *Descriptor, wiretype string) string {
 	jsonName := *field.Name
 	jsonTag := jsonName + ",omitempty"
@@ -3268,6 +3398,8 @@ func (g *Generator) generateMessage(message *Descriptor) {
 
 	mapFieldTypes := make(map[*descriptor.FieldDescriptorProto]string) // keep track of the map fields to be added later
 
+	mapFieldsToTypes := make(map[string]*GoMapDescriptor)
+
 	for i, field := range message.Field {
 		// Allocate the getter and the field at the same time so name
 		// collisions create field/method consistent names.
@@ -3297,6 +3429,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			// This is the first field of a oneof we haven't seen before.
 			// Generate the union field.
 			oneofFullPath := fmt.Sprintf("%s,%d,%d", message.path, messageOneofPath, *field.OneofIndex)
+
 			c, ok := g.makeComments(oneofFullPath)
 			if ok {
 				c += "\n//\n"
@@ -3304,7 +3437,7 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			c += "// Types that are valid to be assigned to " + fname + ":\n"
 			// Generate the rest of this comment later,
 			// when we've computed any disambiguation.
-
+			
 			dname := "is" + goTypeName + "_" + fname
 			tag := `protobuf_oneof:"` + odp.GetName() + `"`
 			of := oneofField{
@@ -3327,6 +3460,9 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			desc := g.ObjectNamed(field.GetTypeName())
 			if d, ok := desc.(*Descriptor); ok && d.GetOptions().GetMapEntry() {
 				m := g.GoMapType(d, field)
+
+				mapFieldsToTypes[fieldName] = m
+
 				typename = m.GoType
 				mapFieldTypes[field] = typename // record for the getter generation
 
@@ -3456,6 +3592,15 @@ func (g *Generator) generateMessage(message *Descriptor) {
 	g.P()
 	g.generateOneofFuncs(mc, topLevelFields)
 	g.P()
+	g.generateClone(mc, topLevelFields, mapFieldsToTypes)
+	g.P()
+
+	//if len(mapFieldTypes) > 0 {
+	//	fmt.Fprintf(os.Stderr, "\n\n%s\n", mc.goName)
+	//	for k, v := range mapFieldTypes {
+	//		fmt.Fprintf(os.Stderr, "\t Key: %+v -> %+v\n", k, v)
+	//	}
+	//}
 
 	var oneofTypes []string
 	for _, f := range topLevelFields {
