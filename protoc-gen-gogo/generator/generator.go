@@ -3273,6 +3273,7 @@ func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, ma
 						g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
 						g.P("for idx, v := range m.", typedField.goName, " {")
 						g.In()
+						// All slices here are messages, otherwise, they are not of type message
 						g.P("cloned.", typedField.goName, "[idx] = v.Clone()")
 						g.endBlock()
 						g.endBlock()
@@ -3300,7 +3301,7 @@ func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, ma
 					g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
 					g.P("for idx, v := range m.", typedField.goName, " {")
 					g.In()
-					// All slices here are messages, otherwise, they are not of type message
+					// All slices here are non message types, e.g. []string. []int, etc
 					g.P("cloned.", typedField.goName, "[idx] = v")
 					g.endBlock()
 					g.endBlock()
