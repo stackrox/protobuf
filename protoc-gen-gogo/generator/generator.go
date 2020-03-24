@@ -3280,11 +3280,16 @@ func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, ma
 				} else {
 					g.P("cloned.", typedField.goName, "=", "m.", typedField.goName, ".Clone()")
 				}
+			case descriptor.FieldDescriptorProto_TYPE_BYTES:
+				g.ifNotNilHeader(typedField.goName)
+				g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
+				g.P("copy(cloned.", typedField.goName, ", m.", typedField.goName, ")")
+				g.endBlock()
 			default:
 				if *typedField.protoField.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 					g.ifNotNilHeader(typedField.goName)
 					g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
-					g.P("copy(cloned.",typedField.goName, ", m.", typedField.goName, ")")
+					g.P("copy(cloned.", typedField.goName, ", m.", typedField.goName, ")")
 					g.endBlock()
 				}
 			}

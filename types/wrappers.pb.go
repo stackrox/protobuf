@@ -603,6 +603,10 @@ func (m *BytesValue) Clone() *BytesValue {
 	cloned := new(BytesValue)
 	*cloned = *m
 
+	if m.Value != nil {
+		cloned.Value = make([]byte, len(m.Value))
+		copy(cloned.Value, m.Value)
+	}
 	return cloned
 }
 

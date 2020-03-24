@@ -195,6 +195,10 @@ func (m *Any) Clone() *Any {
 	cloned := new(Any)
 	*cloned = *m
 
+	if m.Value != nil {
+		cloned.Value = make([]byte, len(m.Value))
+		copy(cloned.Value, m.Value)
+	}
 	return cloned
 }
 
