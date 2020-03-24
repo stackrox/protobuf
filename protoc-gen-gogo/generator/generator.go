@@ -2822,7 +2822,6 @@ func (g *Generator) generateGet(mc *msgCtx, protoField *descriptor.FieldDescript
 		// as does a message or group field, or a repeated field.
 		g.P("if m != nil {")
 		g.In()
-
 		g.P("return m." + fname)
 		g.Out()
 		g.P("}")
@@ -3005,7 +3004,7 @@ func (g *Generator) generateOneofDecls(mc *msgCtx, topLevelFields []topLevelFiel
 		if gogoproto.IsProtoSizer(g.file.FileDescriptorProto, mc.message.DescriptorProto) {
 			g.P(`ProtoSize() int`)
 		}
-		g.P("Clone()", of.goType)
+		g.P("Clone()", dname)
 		g.Out()
 		g.P("}")
 	}
@@ -3252,7 +3251,7 @@ func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, ma
 		case *simpleField:
 			switch *typedField.protoField.Type {
 			case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-				// If repeated do x, otherwise do y
+				// If repeated a repeated msg, iterate and call Clone
 				if *typedField.protoField.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 					if mapDesc, ok := mapFields[typedField.goName]; ok {
 						// Handle Map
@@ -3279,31 +3278,13 @@ func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, ma
 						g.endBlock()
 					}
 				} else {
-					g.ifNotNilHeader(typedField.goName)
-					switch typedField.goType {
-					case "*types.Timestamp":
-						g.P("cloned.", typedField.goName, "= new(types.Timestamp)")
-						g.P("cloned.", typedField.goName, ".Seconds = m.", typedField.goName, ".Seconds")
-						g.P("cloned.", typedField.goName, ".Nanos = m.", typedField.goName, ".Nanos")
-					case "*types.Any":
-						g.P("cloned.", typedField.goName, "= new(types.Any)")
-						g.P("cloned.", typedField.goName, ".TypeUrl = m.", typedField.goName, ".TypeUrl")
-						g.P("cloned.", typedField.goName, ".Value = make([]byte, len(m.", typedField.goName, ".Value))")
-						g.P("copy(cloned.", typedField.goName, ".Value", ", m.", typedField.goName, ".Value)")
-					default:
-						g.P("cloned.", typedField.goName, "=", "m.", typedField.goName, ".Clone()")
-					}
-					g.endBlock()
+					g.P("cloned.", typedField.goName, "=", "m.", typedField.goName, ".Clone()")
 				}
 			default:
 				if *typedField.protoField.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 					g.ifNotNilHeader(typedField.goName)
 					g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
-					g.P("for idx, v := range m.", typedField.goName, " {")
-					g.In()
-					// All slices here are non message types, e.g. []string. []int, etc
-					g.P("cloned.", typedField.goName, "[idx] = v")
-					g.endBlock()
+					g.P("copy(cloned.",typedField.goName, ", m.", typedField.goName, ")")
 					g.endBlock()
 				}
 			}

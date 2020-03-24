@@ -156,6 +156,35 @@ func (m *Api) GetSyntax() Syntax {
 	return Syntax_SYNTAX_PROTO2
 }
 
+func (m *Api) Clone() *Api {
+	if m == nil {
+		return nil
+	}
+	cloned := new(Api)
+	*cloned = *m
+
+	if m.Methods != nil {
+		cloned.Methods = make([]*Method, len(m.Methods))
+		for idx, v := range m.Methods {
+			cloned.Methods[idx] = v.Clone()
+		}
+	}
+	if m.Options != nil {
+		cloned.Options = make([]*Option, len(m.Options))
+		for idx, v := range m.Options {
+			cloned.Options[idx] = v.Clone()
+		}
+	}
+	cloned.SourceContext = m.SourceContext.Clone()
+	if m.Mixins != nil {
+		cloned.Mixins = make([]*Mixin, len(m.Mixins))
+		for idx, v := range m.Mixins {
+			cloned.Mixins[idx] = v.Clone()
+		}
+	}
+	return cloned
+}
+
 func (*Api) XXX_MessageName() string {
 	return "google.protobuf.Api"
 }
@@ -260,6 +289,22 @@ func (m *Method) GetSyntax() Syntax {
 		return m.Syntax
 	}
 	return Syntax_SYNTAX_PROTO2
+}
+
+func (m *Method) Clone() *Method {
+	if m == nil {
+		return nil
+	}
+	cloned := new(Method)
+	*cloned = *m
+
+	if m.Options != nil {
+		cloned.Options = make([]*Option, len(m.Options))
+		for idx, v := range m.Options {
+			cloned.Options[idx] = v.Clone()
+		}
+	}
+	return cloned
 }
 
 func (*Method) XXX_MessageName() string {
@@ -399,6 +444,16 @@ func (m *Mixin) GetRoot() string {
 		return m.Root
 	}
 	return ""
+}
+
+func (m *Mixin) Clone() *Mixin {
+	if m == nil {
+		return nil
+	}
+	cloned := new(Mixin)
+	*cloned = *m
+
+	return cloned
 }
 
 func (*Mixin) XXX_MessageName() string {

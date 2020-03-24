@@ -168,6 +168,16 @@ func (m *Timestamp) GetNanos() int32 {
 	return 0
 }
 
+func (m *Timestamp) Clone() *Timestamp {
+	if m == nil {
+		return nil
+	}
+	cloned := new(Timestamp)
+	*cloned = *m
+
+	return cloned
+}
+
 func (*Timestamp) XXX_MessageName() string {
 	return "google.protobuf.Timestamp"
 }
