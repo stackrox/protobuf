@@ -3255,6 +3255,15 @@ func (g *Generator) endBlock() {
 	g.P("}")
 }
 
+func isPrimitiveType(typ descriptor.FieldDescriptorProto_Type) bool {
+	switch typ {
+	case descriptor.FieldDescriptorProto_TYPE_MESSAGE, descriptor.FieldDescriptorProto_TYPE_GROUP, descriptor.FieldDescriptorProto_TYPE_BYTES:
+		return false
+	default:
+		return true
+	}
+}
+
 func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, mapFields map[string]*GoMapDescriptor) {
 	g.cloneGenericHeader(mc.goName, fmt.Sprintf("*%s", mc.goName))
 
@@ -3271,9 +3280,17 @@ func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, ma
 						g.P("cloned.", typedField.goName, "= make(", mapDesc.GoType, ", ", "len(m.", typedField.goName, ")", ")")
 						g.P("for k, v := range m.", typedField.goName, " {")
 						g.In()
-						if *mapDesc.ValueField.Type == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+						switch *mapDesc.ValueField.Type {
+						case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
 							g.P("cloned.", typedField.goName, "[k] = v.Clone()")
-						} else {
+						case descriptor.FieldDescriptorProto_TYPE_BYTES:
+							lhs := fmt.Sprintf("cloned.%s[k]", typedField.goName)
+							g.P(lhs, "= make([]byte, len(v))")
+							g.P("copy(", lhs, ",", "v)")
+						default:
+							if !isPrimitiveType(*mapDesc.ValueField.Type) {
+								panic(fmt.Sprintf("Type %s is not currently handled", *mapDesc.ValueField.Type))
+							}
 							g.P("cloned.", typedField.goName, "[k] = v")
 						}
 						g.endBlock()
@@ -3293,8 +3310,22 @@ func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, ma
 					g.P("cloned.", typedField.goName, "=", "m.", typedField.goName, ".Clone()")
 				}
 			case descriptor.FieldDescriptorProto_TYPE_BYTES:
-				g.cloneRepeatedPrimitive(typedField.goType, typedField.goName)
+				if *typedField.protoField.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED {
+					g.ifNotNilHeader(typedField.goName)
+					g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
+					g.P("for idx, v := range m.", typedField.goName, " {")
+					g.In()
+					g.P("cloned.", typedField.goName, "[idx] = make([]byte, len(v))")
+					g.P("copy(cloned.", typedField.goName, "[idx]", ", v)")
+					g.endBlock()
+					g.endBlock()
+				} else {
+					g.cloneRepeatedPrimitive(typedField.goType, typedField.goName)
+				}
 			default:
+				if !isPrimitiveType(*typedField.protoField.Type) {
+					panic(fmt.Sprintf("Cannot currently handle: %s", *typedField.protoField.Type))
+				}
 				if *typedField.protoField.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED {
 					g.cloneRepeatedPrimitive(typedField.goType, typedField.goName)
 				}
