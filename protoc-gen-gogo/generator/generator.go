@@ -3027,8 +3027,13 @@ func (g *Generator) generateOneofDecls(mc *msgCtx, topLevelFields []topLevelFiel
 
 			// subfield clone
 			g.cloneGenericHeader(sf.oneofTypeName, of.goType)
-			if *sf.protoField.Type == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
+			switch *sf.protoField.Type {
+			case descriptor.FieldDescriptorProto_TYPE_MESSAGE:
 				g.P("cloned.", sf.goName, "=", "m.", sf.goName, ".Clone()")
+			case descriptor.FieldDescriptorProto_TYPE_BYTES:
+				g.cloneRepeatedPrimitive(sf.goType, sf.goName)
+			}
+			if *sf.protoField.Type == descriptor.FieldDescriptorProto_TYPE_MESSAGE {
 			}
 			g.cloneGenericFooter()
 		}
@@ -3233,6 +3238,13 @@ func (g *Generator) cloneGenericFooter() {
 	g.endBlock()
 }
 
+func (g *Generator) cloneRepeatedPrimitive(typ, name string) {
+	g.ifNotNilHeader(name)
+	g.P("cloned.", name, "= make(", typ, ", len(m.", name, ")", ")")
+	g.P("copy(cloned.", name, ", m.", name, ")")
+	g.endBlock()
+}
+
 func (g *Generator) ifNotNilHeader(name string) {
 	g.P("if m.", name, "!= nil {")
 	g.In()
@@ -3281,16 +3293,10 @@ func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, ma
 					g.P("cloned.", typedField.goName, "=", "m.", typedField.goName, ".Clone()")
 				}
 			case descriptor.FieldDescriptorProto_TYPE_BYTES:
-				g.ifNotNilHeader(typedField.goName)
-				g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
-				g.P("copy(cloned.", typedField.goName, ", m.", typedField.goName, ")")
-				g.endBlock()
+				g.cloneRepeatedPrimitive(typedField.goType, typedField.goName)
 			default:
 				if *typedField.protoField.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED {
-					g.ifNotNilHeader(typedField.goName)
-					g.P("cloned.", typedField.goName, "= make(", typedField.goType, ", len(m.", typedField.goName, ")", ")")
-					g.P("copy(cloned.", typedField.goName, ", m.", typedField.goName, ")")
-					g.endBlock()
+					g.cloneRepeatedPrimitive(typedField.goType, typedField.goName)
 				}
 			}
 		case *oneofField:
