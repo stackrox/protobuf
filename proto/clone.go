@@ -39,10 +39,12 @@ import (
 	"log"
 	"reflect"
 	"strings"
+
+	"github.com/golang/protobuf/proto"
 )
 
 type CloneableMessage interface {
-	MessageClone() Message
+	MessageClone() proto.Message
 }
 
 // Clone returns a deep copy of a protocol buffer.
@@ -56,7 +58,7 @@ func Clone(src Message) Message {
 		return src
 	}
 	out := reflect.New(in.Type().Elem())
-	dst := out.Interface().(Message)
+	dst := out.Interface().(proto.Message)
 	Merge(dst, src)
 	return dst
 }

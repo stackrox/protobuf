@@ -2,4 +2,4 @@ module github.com/gogo/protobuf
 
 go 1.14
 
-require github.com/kisielk/errcheck v1.1.0 // indirect
+require github.com/golang/protobuf v1.3.5
