@@ -266,6 +266,9 @@ func (m *Type) GetSyntax() Syntax {
 	return Syntax_SYNTAX_PROTO2
 }
 
+func (m *Type) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Type) Clone() *Type {
 	if m == nil {
 		return nil
@@ -428,6 +431,9 @@ func (m *Field) GetDefaultValue() string {
 	return ""
 }
 
+func (m *Field) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Field) Clone() *Field {
 	if m == nil {
 		return nil
@@ -532,6 +538,9 @@ func (m *Enum) GetSyntax() Syntax {
 	return Syntax_SYNTAX_PROTO2
 }
 
+func (m *Enum) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Enum) Clone() *Enum {
 	if m == nil {
 		return nil
@@ -625,6 +634,9 @@ func (m *EnumValue) GetOptions() []*Option {
 	return nil
 }
 
+func (m *EnumValue) MessageClone() Message {
+	return m.Clone()
+}
 func (m *EnumValue) Clone() *EnumValue {
 	if m == nil {
 		return nil
@@ -709,6 +721,9 @@ func (m *Option) GetValue() *Any {
 	return nil
 }
 
+func (m *Option) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Option) Clone() *Option {
 	if m == nil {
 		return nil

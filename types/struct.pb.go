@@ -108,6 +108,9 @@ func (m *Struct) GetFields() map[string]*Value {
 	return nil
 }
 
+func (m *Struct) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Struct) Clone() *Struct {
 	if m == nil {
 		return nil
@@ -457,6 +460,9 @@ func _Value_OneofSizer(msg proto.Message) (n int) {
 	return n
 }
 
+func (m *Value) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Value) Clone() *Value {
 	if m == nil {
 		return nil
@@ -525,6 +531,9 @@ func (m *ListValue) GetValues() []*Value {
 	return nil
 }
 
+func (m *ListValue) MessageClone() Message {
+	return m.Clone()
+}
 func (m *ListValue) Clone() *ListValue {
 	if m == nil {
 		return nil

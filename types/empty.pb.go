@@ -72,6 +72,9 @@ func (m *Empty) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Empty proto.InternalMessageInfo
 
+func (m *Empty) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Empty) Clone() *Empty {
 	if m == nil {
 		return nil

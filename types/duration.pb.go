@@ -148,6 +148,9 @@ func (m *Duration) GetNanos() int32 {
 	return 0
 }
 
+func (m *Duration) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Duration) Clone() *Duration {
 	if m == nil {
 		return nil

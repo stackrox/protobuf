@@ -74,6 +74,9 @@ func (m *SourceContext) GetFileName() string {
 	return ""
 }
 
+func (m *SourceContext) MessageClone() Message {
+	return m.Clone()
+}
 func (m *SourceContext) Clone() *SourceContext {
 	if m == nil {
 		return nil

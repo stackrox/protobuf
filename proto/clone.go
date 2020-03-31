@@ -41,8 +41,16 @@ import (
 	"strings"
 )
 
+type CloneableMessage interface {
+	MessageClone() Message
+}
+
 // Clone returns a deep copy of a protocol buffer.
 func Clone(src Message) Message {
+	if cloneable, ok := src.(CloneableMessage); ok {
+		return cloneable.MessageClone()
+	}
+
 	in := reflect.ValueOf(src)
 	if in.IsNil() {
 		return src

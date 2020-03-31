@@ -76,6 +76,9 @@ func (m *DoubleValue) GetValue() float64 {
 	return 0
 }
 
+func (m *DoubleValue) MessageClone() Message {
+	return m.Clone()
+}
 func (m *DoubleValue) Clone() *DoubleValue {
 	if m == nil {
 		return nil
@@ -141,6 +144,9 @@ func (m *FloatValue) GetValue() float32 {
 	return 0
 }
 
+func (m *FloatValue) MessageClone() Message {
+	return m.Clone()
+}
 func (m *FloatValue) Clone() *FloatValue {
 	if m == nil {
 		return nil
@@ -206,6 +212,9 @@ func (m *Int64Value) GetValue() int64 {
 	return 0
 }
 
+func (m *Int64Value) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Int64Value) Clone() *Int64Value {
 	if m == nil {
 		return nil
@@ -271,6 +280,9 @@ func (m *UInt64Value) GetValue() uint64 {
 	return 0
 }
 
+func (m *UInt64Value) MessageClone() Message {
+	return m.Clone()
+}
 func (m *UInt64Value) Clone() *UInt64Value {
 	if m == nil {
 		return nil
@@ -336,6 +348,9 @@ func (m *Int32Value) GetValue() int32 {
 	return 0
 }
 
+func (m *Int32Value) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Int32Value) Clone() *Int32Value {
 	if m == nil {
 		return nil
@@ -401,6 +416,9 @@ func (m *UInt32Value) GetValue() uint32 {
 	return 0
 }
 
+func (m *UInt32Value) MessageClone() Message {
+	return m.Clone()
+}
 func (m *UInt32Value) Clone() *UInt32Value {
 	if m == nil {
 		return nil
@@ -466,6 +484,9 @@ func (m *BoolValue) GetValue() bool {
 	return false
 }
 
+func (m *BoolValue) MessageClone() Message {
+	return m.Clone()
+}
 func (m *BoolValue) Clone() *BoolValue {
 	if m == nil {
 		return nil
@@ -531,6 +552,9 @@ func (m *StringValue) GetValue() string {
 	return ""
 }
 
+func (m *StringValue) MessageClone() Message {
+	return m.Clone()
+}
 func (m *StringValue) Clone() *StringValue {
 	if m == nil {
 		return nil
@@ -596,6 +620,9 @@ func (m *BytesValue) GetValue() []byte {
 	return nil
 }
 
+func (m *BytesValue) MessageClone() Message {
+	return m.Clone()
+}
 func (m *BytesValue) Clone() *BytesValue {
 	if m == nil {
 		return nil

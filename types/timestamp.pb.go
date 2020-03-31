@@ -168,6 +168,9 @@ func (m *Timestamp) GetNanos() int32 {
 	return 0
 }
 
+func (m *Timestamp) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Timestamp) Clone() *Timestamp {
 	if m == nil {
 		return nil

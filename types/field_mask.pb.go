@@ -270,6 +270,9 @@ func (m *FieldMask) GetPaths() []string {
 	return nil
 }
 
+func (m *FieldMask) MessageClone() Message {
+	return m.Clone()
+}
 func (m *FieldMask) Clone() *FieldMask {
 	if m == nil {
 		return nil

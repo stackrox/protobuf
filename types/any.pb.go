@@ -188,6 +188,9 @@ func (m *Any) GetValue() []byte {
 	return nil
 }
 
+func (m *Any) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Any) Clone() *Any {
 	if m == nil {
 		return nil

@@ -156,6 +156,9 @@ func (m *Api) GetSyntax() Syntax {
 	return Syntax_SYNTAX_PROTO2
 }
 
+func (m *Api) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Api) Clone() *Api {
 	if m == nil {
 		return nil
@@ -291,6 +294,9 @@ func (m *Method) GetSyntax() Syntax {
 	return Syntax_SYNTAX_PROTO2
 }
 
+func (m *Method) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Method) Clone() *Method {
 	if m == nil {
 		return nil
@@ -446,6 +452,9 @@ func (m *Mixin) GetRoot() string {
 	return ""
 }
 
+func (m *Mixin) MessageClone() Message {
+	return m.Clone()
+}
 func (m *Mixin) Clone() *Mixin {
 	if m == nil {
 		return nil

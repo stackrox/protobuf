@@ -3221,6 +3221,13 @@ func (g *Generator) generateCommonMethods(mc *msgCtx) {
 	g.P("var xxx_messageInfo_", mc.goName, " ", g.Pkg["proto"], ".InternalMessageInfo")
 }
 
+func (g *Generator) cloneableMessageStub(typeName string) {
+	g.P("func (m *", typeName, ") MessageClone() Message {")
+	g.In()
+	g.P("return m.Clone()")
+	g.endBlock()
+}
+
 func (g *Generator) cloneGenericHeader(typeName, returnName string) {
 	g.P("func (m *", typeName, ") Clone() ", returnName, "{")
 	g.In()
@@ -3265,6 +3272,7 @@ func isPrimitiveType(typ descriptor.FieldDescriptorProto_Type) bool {
 }
 
 func (g *Generator) generateClone(mc *msgCtx, topLevelFields []topLevelField, mapFields map[string]*GoMapDescriptor) {
+	g.cloneableMessageStub(mc.goName)
 	g.cloneGenericHeader(mc.goName, fmt.Sprintf("*%s", mc.goName))
 
 	for _, field := range topLevelFields {
