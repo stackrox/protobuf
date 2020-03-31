@@ -74,7 +74,7 @@ func (m *SourceContext) GetFileName() string {
 	return ""
 }
 
-func (m *SourceContext) MessageClone() Message {
+func (m *SourceContext) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *SourceContext) Clone() *SourceContext {

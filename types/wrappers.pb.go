@@ -76,7 +76,7 @@ func (m *DoubleValue) GetValue() float64 {
 	return 0
 }
 
-func (m *DoubleValue) MessageClone() Message {
+func (m *DoubleValue) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *DoubleValue) Clone() *DoubleValue {
@@ -144,7 +144,7 @@ func (m *FloatValue) GetValue() float32 {
 	return 0
 }
 
-func (m *FloatValue) MessageClone() Message {
+func (m *FloatValue) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *FloatValue) Clone() *FloatValue {
@@ -212,7 +212,7 @@ func (m *Int64Value) GetValue() int64 {
 	return 0
 }
 
-func (m *Int64Value) MessageClone() Message {
+func (m *Int64Value) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Int64Value) Clone() *Int64Value {
@@ -280,7 +280,7 @@ func (m *UInt64Value) GetValue() uint64 {
 	return 0
 }
 
-func (m *UInt64Value) MessageClone() Message {
+func (m *UInt64Value) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *UInt64Value) Clone() *UInt64Value {
@@ -348,7 +348,7 @@ func (m *Int32Value) GetValue() int32 {
 	return 0
 }
 
-func (m *Int32Value) MessageClone() Message {
+func (m *Int32Value) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Int32Value) Clone() *Int32Value {
@@ -416,7 +416,7 @@ func (m *UInt32Value) GetValue() uint32 {
 	return 0
 }
 
-func (m *UInt32Value) MessageClone() Message {
+func (m *UInt32Value) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *UInt32Value) Clone() *UInt32Value {
@@ -484,7 +484,7 @@ func (m *BoolValue) GetValue() bool {
 	return false
 }
 
-func (m *BoolValue) MessageClone() Message {
+func (m *BoolValue) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *BoolValue) Clone() *BoolValue {
@@ -552,7 +552,7 @@ func (m *StringValue) GetValue() string {
 	return ""
 }
 
-func (m *StringValue) MessageClone() Message {
+func (m *StringValue) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *StringValue) Clone() *StringValue {
@@ -620,7 +620,7 @@ func (m *BytesValue) GetValue() []byte {
 	return nil
 }
 
-func (m *BytesValue) MessageClone() Message {
+func (m *BytesValue) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *BytesValue) Clone() *BytesValue {

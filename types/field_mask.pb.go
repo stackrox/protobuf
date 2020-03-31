@@ -270,7 +270,7 @@ func (m *FieldMask) GetPaths() []string {
 	return nil
 }
 
-func (m *FieldMask) MessageClone() Message {
+func (m *FieldMask) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *FieldMask) Clone() *FieldMask {

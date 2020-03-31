@@ -3222,7 +3222,7 @@ func (g *Generator) generateCommonMethods(mc *msgCtx) {
 }
 
 func (g *Generator) cloneableMessageStub(typeName string) {
-	g.P("func (m *", typeName, ") MessageClone() Message {")
+	g.P("func (m *", typeName, ") MessageClone() proto.Message {")
 	g.In()
 	g.P("return m.Clone()")
 	g.endBlock()

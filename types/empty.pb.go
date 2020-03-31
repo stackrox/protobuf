@@ -72,7 +72,7 @@ func (m *Empty) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Empty proto.InternalMessageInfo
 
-func (m *Empty) MessageClone() Message {
+func (m *Empty) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Empty) Clone() *Empty {

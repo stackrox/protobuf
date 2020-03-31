@@ -148,7 +148,7 @@ func (m *Duration) GetNanos() int32 {
 	return 0
 }
 
-func (m *Duration) MessageClone() Message {
+func (m *Duration) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Duration) Clone() *Duration {

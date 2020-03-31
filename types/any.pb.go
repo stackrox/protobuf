@@ -188,7 +188,7 @@ func (m *Any) GetValue() []byte {
 	return nil
 }
 
-func (m *Any) MessageClone() Message {
+func (m *Any) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Any) Clone() *Any {

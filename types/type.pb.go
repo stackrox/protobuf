@@ -266,7 +266,7 @@ func (m *Type) GetSyntax() Syntax {
 	return Syntax_SYNTAX_PROTO2
 }
 
-func (m *Type) MessageClone() Message {
+func (m *Type) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Type) Clone() *Type {
@@ -431,7 +431,7 @@ func (m *Field) GetDefaultValue() string {
 	return ""
 }
 
-func (m *Field) MessageClone() Message {
+func (m *Field) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Field) Clone() *Field {
@@ -538,7 +538,7 @@ func (m *Enum) GetSyntax() Syntax {
 	return Syntax_SYNTAX_PROTO2
 }
 
-func (m *Enum) MessageClone() Message {
+func (m *Enum) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Enum) Clone() *Enum {
@@ -634,7 +634,7 @@ func (m *EnumValue) GetOptions() []*Option {
 	return nil
 }
 
-func (m *EnumValue) MessageClone() Message {
+func (m *EnumValue) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *EnumValue) Clone() *EnumValue {
@@ -721,7 +721,7 @@ func (m *Option) GetValue() *Any {
 	return nil
 }
 
-func (m *Option) MessageClone() Message {
+func (m *Option) MessageClone() proto.Message {
 	return m.Clone()
 }
 func (m *Option) Clone() *Option {
