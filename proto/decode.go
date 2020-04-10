@@ -333,7 +333,7 @@ type newUnmarshaler interface {
 // existing data in pb is always removed. Use UnmarshalMerge
 // to preserve and append to existing data.
 func Unmarshal(buf []byte, pb Message) error {
-	if isNil(reflect.ValueOf(pb)) {
+	if pb == nil || isNil(reflect.ValueOf(pb)) {
 		return ErrNil
 	}
 	pb.Reset()
