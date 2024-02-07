@@ -2246,13 +2246,14 @@ func (f *simpleField) getProto() *descriptor.FieldDescriptorProto {
 // oneofSubFields are kept slize held by each oneofField. They do not appear in the top level slize of fields for the message.
 type oneofSubField struct {
 	fieldCommon
-	protoTypeName string                               // Proto type name, empty if primitive, e.g. ".google.protobuf.Duration"
-	protoType     descriptor.FieldDescriptorProto_Type // Actual type enum value, e.g. descriptor.FieldDescriptorProto_TYPE_FIXED64
-	oneofTypeName string                               // Type name of the enclosing struct, e.g. "MessageName_FieldName"
-	fieldNumber   int                                  // Actual field number, as defined in proto, e.g. 12
-	getterDef     string                               // Default for getters, e.g. "nil", `""` or "Default_MessageType_FieldName"
-	protoDef      string                               // Default value as defined in the proto file, e.g "yoshi" or "5"
-	deprecated    string                               // Deprecation comment, if any.
+	protoTypeName   string                               // Proto type name, empty if primitive, e.g. ".google.protobuf.Duration"
+	protoType       descriptor.FieldDescriptorProto_Type // Actual type enum value, e.g. descriptor.FieldDescriptorProto_TYPE_FIXED64
+	oneofTypeName   string                               // Type name of the enclosing struct, e.g. "MessageName_FieldName"
+	fieldNumber     int                                  // Actual field number, as defined in proto, e.g. 12
+	getterDef       string                               // Default for getters, e.g. "nil", `""` or "Default_MessageType_FieldName"
+	protoDef        string                               // Default value as defined in the proto file, e.g "yoshi" or "5"
+	deprecated      string                               // Deprecation comment, if any.
+	trailingComment string                               // The trailing comment for the OneOf field, e.g. "fieldName fieldType // Useful information"
 }
 
 // typedNil prints a nil casted to the pointer to this field.
@@ -2603,7 +2604,7 @@ func (g *Generator) generateOneofDecls(mc *msgCtx, topLevelFields []topLevelFiel
 	for _, of := range ofields {
 		for i, sf := range of.subFields {
 			fieldFullPath := fmt.Sprintf("%s,%d,%d", mc.message.path, messageFieldPath, i)
-			g.P("type ", Annotate(mc.message.file, fieldFullPath, sf.oneofTypeName), " struct{ ", Annotate(mc.message.file, fieldFullPath, sf.goName), " ", sf.goType, " `", sf.tags, "` }")
+			g.P("type ", Annotate(mc.message.file, fieldFullPath, sf.oneofTypeName), " struct{\n", Annotate(mc.message.file, fieldFullPath, sf.goName), " ", sf.goType, " `", sf.tags, "`", " ", sf.trailingComment, "\n", "}")
 			if !gogoproto.IsStdType(sf.protoField) && !gogoproto.IsCustomType(sf.protoField) && !gogoproto.IsCastType(sf.protoField) {
 				g.RecordTypeUse(sf.protoField.GetTypeName())
 			}
@@ -3093,6 +3094,9 @@ func (g *Generator) generateMessage(message *Descriptor) {
 				break
 			}
 
+			subFieldFullPath := fmt.Sprintf("%s,%d,%d", message.path, messageFieldPath, i)
+			tcSubField, _ := g.makeTrailingComments(subFieldFullPath)
+
 			oneofField := oFields[*field.OneofIndex]
 			sf := oneofSubField{
 				fieldCommon: fieldCommon{
@@ -3101,16 +3105,17 @@ func (g *Generator) generateMessage(message *Descriptor) {
 					goType:     typename,
 					tags:       tag,
 					protoName:  field.GetName(),
-					fullPath:   fmt.Sprintf("%s,%d,%d", message.path, messageFieldPath, i),
+					fullPath:   subFieldFullPath,
 					protoField: field,
 				},
-				protoTypeName: field.GetTypeName(),
-				fieldNumber:   int(*field.Number),
-				protoType:     *field.Type,
-				getterDef:     dvalue,
-				protoDef:      field.GetDefaultValue(),
-				oneofTypeName: tname,
-				deprecated:    fieldDeprecated,
+				protoTypeName:   field.GetTypeName(),
+				fieldNumber:     int(*field.Number),
+				protoType:       *field.Type,
+				getterDef:       dvalue,
+				protoDef:        field.GetDefaultValue(),
+				oneofTypeName:   tname,
+				deprecated:      fieldDeprecated,
+				trailingComment: tcSubField,
 			}
 
 			oneofField.subFields = append(oneofField.subFields, &sf)

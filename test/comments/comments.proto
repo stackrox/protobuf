@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package storage;
+
+option go_package = "storage";
+
+message TagTest {
+  string a = 1; // @gotags: tag:"on-field-a"
+  oneof OneOf {
+    string oneOfA = 2; // @gotags: tag:"on-field-one-of-a"
+    string oneOfB = 3;
+    string oneOfC = 4; // @gotags: search:"-" sql:"ignore-fks,ignore-index"
+    string oneOfD = 5; // Not relevant comment
+  }
+  string c = 6; // @gotags: tag:"on-field-c"
+  string d = 7; // Not relevant comment
+}
